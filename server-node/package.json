@@ -1,0 +1,14 @@
+{
+  "name": "risu-tokenizer-node-baseline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Node.js baseline server for the risu-tokenizer-service benchmark. Implements the same /api/tokenize API as the WebFlux service using RisuAI's exact WASM tokenizer libs.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@dqbd/tiktoken": "^1.0.22",
+    "express": "^4.21.0"
+  }
+}
