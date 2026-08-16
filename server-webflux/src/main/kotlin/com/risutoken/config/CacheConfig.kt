@@ -36,7 +36,7 @@ class CacheConfig {
     fun tokenizerScheduler(props: RisuTokenProperties): Scheduler =
         Schedulers.newBoundedElastic(
             props.tokenizer.cpuThreads,
-            props.tokenizer.cpuThreads * 10_000,
+            props.tokenizer.computeQueueSize,
             "tokenizer",
         )
 }

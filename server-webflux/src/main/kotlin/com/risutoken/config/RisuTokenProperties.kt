@@ -23,11 +23,17 @@ data class RisuTokenProperties(
         var l2TtlHours: Long = 24,
         /** Prefix for Redis keys. */
         var keyPrefix: String = "risu:tok:",
+        /** Cap for the async L2 write-back buffer (bounded sink). */
+        var l2WriteBackBufferSize: Int = 2_000,
     )
 
     data class Tokenizer(
         /** Threads for the CPU-bound tokenize scheduler. */
         var cpuThreads: Int = Runtime.getRuntime().availableProcessors(),
+        /** Bounded queue for the tokenize scheduler (memory bound: ~83KB x this). */
+        var computeQueueSize: Int = 2_000,
+        /** Fast-fail: requests waiting for compute longer than this are rejected. */
+        var computeWaitTimeoutSeconds: Long = 5,
         /** Max characters per text payload. */
         var maxTextLength: Int = 1_000_000,
         /** Max texts per batch request. */

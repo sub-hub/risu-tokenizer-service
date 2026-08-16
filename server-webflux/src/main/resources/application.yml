@@ -30,8 +30,11 @@ risutoken:
     l1-max-size: 10000
     l1-expire-after-write-minutes: 60
     l2-ttl-hours: 24
+    l2-write-back-buffer-size: 2000
   tokenizer:
     cpu-threads: 8
+    compute-queue-size: 2000
+    compute-wait-timeout-seconds: 5
     max-text-length: 1000000
     max-batch-size: 1000
     batch-concurrency: 16
