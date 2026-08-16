@@ -10,6 +10,9 @@ import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 import java.security.MessageDigest
 import java.time.Duration
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 @Configuration
 @EnableConfigurationProperties(RisuTokenProperties::class)
@@ -28,17 +31,26 @@ class CacheConfig {
             .build()
 
     /**
-     * Dedicated scheduler for CPU-bound tokenization. The Netty event loop must
-     * never run BPE merges (it would stall every in-flight request); CPU work is
-     * hopped to a bounded elastic pool sized to the machine's cores.
+     * Dedicated FIXED thread pool for CPU-bound tokenization. The Netty event
+     * loop must never run BPE merges (it would stall every in-flight request);
+     * CPU work is hopped to a pool of [RisuTokenProperties.Tokenizer.cpuThreads]
+     * threads. A fixed pool is the right shape for CPU-bound work: elastic
+     * thread growth only makes sense for blocking I/O. The task queue is
+     * deliberately bounded; when it fills up, ThreadPoolExecutor rejects the
+     * submission (RejectedExecutionException -> 503), so overload fails fast
+     * instead of accumulating work (and memory) without limit.
      */
-    @Bean
-    fun tokenizerScheduler(props: RisuTokenProperties): Scheduler =
-        Schedulers.newBoundedElastic(
+    @Bean(destroyMethod = "dispose")
+    fun tokenizerScheduler(props: RisuTokenProperties): Scheduler {
+        val executor = ThreadPoolExecutor(
             props.tokenizer.cpuThreads,
-            props.tokenizer.computeQueueSize,
-            "tokenizer",
+            props.tokenizer.cpuThreads,
+            0L, TimeUnit.MILLISECONDS,
+            ArrayBlockingQueue(props.tokenizer.computeQueueSize),
+            Thread.ofPlatform().name("tokenizer-", 0).factory(),
         )
+        return Schedulers.fromExecutorService(executor)
+    }
 }
 
 /** SHA-256 hex helper used to build compact, collision-safe cache keys. */
