@@ -1,0 +1,30 @@
+package com.risutoken.api
+
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.server.ResponseStatusException
+import org.springframework.web.server.ServerWebExchange
+
+/** Maps domain errors to clean HTTP responses instead of raw 500s. */
+@RestControllerAdvice
+class ApiErrorHandler {
+
+    private val log = LoggerFactory.getLogger(ApiErrorHandler::class.java)
+
+    /** Unknown tokenizer / bad input -> 400 Bad Request. */
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun onIllegalArgument(e: IllegalArgumentException, exchange: ServerWebExchange): Map<String, String> {
+        log.info("Bad request: {}", e.message)
+        exchange.response.statusCode = HttpStatus.BAD_REQUEST
+        return mapOf("error" to (e.message ?: "Invalid request"))
+    }
+
+    /** Let Spring's own status exceptions flow through with their status. */
+    @ExceptionHandler(ResponseStatusException::class)
+    fun onStatus(e: ResponseStatusException, exchange: ServerWebExchange): Map<String, String> {
+        exchange.response.statusCode = e.statusCode
+        return mapOf("error" to (e.reason ?: "Error"))
+    }
+}

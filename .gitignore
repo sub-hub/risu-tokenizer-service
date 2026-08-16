@@ -1,0 +1,18 @@
+# Build outputs
+server-webflux/build/
+server-webflux/.gradle/
+server-node/node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime
+*.log
+benchmark/summary.json
+benchmark/bin/
