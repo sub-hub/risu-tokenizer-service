@@ -37,6 +37,8 @@ curl -X POST localhost:8080/api/tokenize -H 'Content-Type: application/json' \
 
 응답의 `cache` 값으로 응답 계층 확인: `COMPUTE | L1 | L2`
 
+과부하 시 동작: CPU 바운드 연산은 전용 고정 스레드 풀(8스레드)로 격리하며, 유한 큐(2,000건) 포화 시 503, 큐 대기 5초 초과 시 503을 반환해 요청을 차단한다.
+
 ## 토크나이저
 
 | name | 백엔드 |
